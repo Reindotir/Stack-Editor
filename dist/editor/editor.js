@@ -320,7 +320,7 @@ export class StackEditor extends EventEmmiter {
     }
     initStyles() {
         this.ui.add(".elib", {
-            width: "80%",
+            width: "90%",
             display: "flex",
             flexDirection: "row",
             color: "rgb(var(--color))",
