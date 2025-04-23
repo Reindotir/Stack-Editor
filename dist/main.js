@@ -74,43 +74,122 @@ root.add(".dark-mode", {
 }, { toVar: true })
 document.body.classList.add("dark-mode")
 const main = document.querySelector("main")
-const editorCont = document.createElement("div");
-editorCont.classList.add("editor-cont");
-main.appendChild(editorCont);
-const editorBox = document.createElement("div");
-editorCont.appendChild(editorBox);
-const pluginManager = new PluginManager();
-const plugins = await pluginManager.getPlugins();
-let data = localStorage.getItem("article");
-if (data) data = JSON.parse(data);
-if (!data) data = { blocks: [
-            {
-                id: "123",
-                tool: "paragraph",
-                data: {
-                    text: ""
-                }
-            }
-        ]};
-const config = { ...{
-        holder: editorBox,
-        autofocus: true,
-        autoInit: false,
-        data: data,
+
+
+ui.add(".file-cont", {
+    width: "100%",
+    height: "auto",
+    padding: "5px 50px",
+    display: "flex",
+    alignItems: "center",
+    gap: "20px",
+
+    "button": {
+        all: "unset",
+        width: "auto",
+        height: "auto",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "rgb(var(--color))",
+        fontSize: "16px",
+        cursor: "pointer",
+    },
+})
+
+const fileCont = document.createElement("div")
+fileCont.classList.add("file-cont")
+main.appendChild(fileCont)
+
+const create = document.createElement("button")
+create.innerHTML = "Новая статья"
+create.addEventListener("click", () => {
+    editor.destroy()
+    editor = createEditor()
+})
+fileCont.appendChild(create)
+
+const save = document.createElement("button")
+save.innerHTML = "Сохранить"
+save.addEventListener("click", async () => {
+    const data = await editor.save()
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "editor_data.json";
+    a.click();
+
+    URL.revokeObjectURL(url);
+})
+fileCont.appendChild(save)
+
+const open = document.createElement("button")
+const input = document.createElement("input")
+input.setAttribute("type", "file")
+input.style.display = "none"
+fileCont.appendChild(input)
+input.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    
+    reader.onload = (event) => {
+        const json = JSON.parse(event.target.result);
+        editor.destroy()
+        editor = createEditor({ data: json })
+    }
+    
+    reader.readAsText(file)
+})
+open.innerHTML = "Открыть"
+open.addEventListener("click", () => {
+    input.click()
+})
+fileCont.appendChild(open)
+
+
+const createEditor = (conf = {}) => {
+    const config = { ...{ 
+        data: { 
+            blocks: [
+                {
+                    id: "123",
+                    tool: "paragraph",
+                    data: {
+                        text: ""
+                    }
+                },
+            ]
+        },
         optionInfo: () => {
             return `Время: ${Date.now()}, <br>Другая инфоормация`;
         },
         showBtnsOnLeave: main,
-    }, ...plugins };
-const editor = new StackEditor(config);
-editor.init();
-editor.on("ready", () => {
-    console.log("Редактор готов");
-    main.querySelector("[contenteditable]").focus()
-});
-editor.on("change", () => {
-    editor.save().then((data) => {
-        const res = JSON.stringify(data, null, 4);
-        localStorage.setItem("article", res);
+        autofocus: true,
+        autoInit: false,
+        ...plugins
+    }, ...conf }
+    const editorBox = document.createElement("div");
+    editorCont.appendChild(editorBox);
+    config.holder = editorBox
+
+    const editor = new StackEditor(config);
+    editor.init();
+    editor.on("ready", () => {
+        console.log("Редактор готов");
+        main.querySelector("[contenteditable]").focus()
     });
-});
+
+    return editor
+}
+
+
+const editorCont = document.createElement("div");
+editorCont.classList.add("editor-cont");
+main.appendChild(editorCont);
+
+const pluginManager = new PluginManager();
+const plugins = await pluginManager.getPlugins();
+
+let editor = createEditor()
