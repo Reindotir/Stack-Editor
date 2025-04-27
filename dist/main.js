@@ -151,15 +151,23 @@ fileCont.appendChild(open)
 
 const createEditor = (conf = {}) => {
     const config = { ...{ 
-        data: { 
-            blocks: [
-                {
-                    id: "123",
-                    tool: "paragraph",
-                    data: {
-                        text: ""
-                    }
-                },
+        data: {
+            "blocks": [
+              {
+                "tool": "paragraph",
+                "id": "123",
+                "data": {
+                  "text": "<b>ANTIBRAT IS COMMING</b>💚💚💚💚💚💚"
+                }
+              },
+              {
+                "tool": "picture",
+                "id": "a64cc901-0c50-4986-956f-592e304291e1",
+                "data": {
+                  "src": "https://resources.tidal.com/images/2be8d270/aa42/4751/a161/f6062247af76/640x640.jpg",
+                  "alt": "💚"
+                }
+              }
             ]
         },
         optionInfo: () => {
